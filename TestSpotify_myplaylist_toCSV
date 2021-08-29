@@ -1,0 +1,118 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled2.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyPHHRSQSl9wKD9j1uf/wMFS",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/saranun/python/blob/main/TestSpotify_myplaylist_toCSV\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "-f8LohEVQPF9",
+        "outputId": "c775057a-15a0-4b09-d589-d9a6eb513dc4"
+      },
+      "source": [
+        "import spotipy\n",
+        "from spotipy.oauth2 import SpotifyClientCredentials\n",
+        "from google.colab import drive\n",
+        "drive.mount('/drive')\n",
+        "import pandas as pd\n",
+        "import time \n",
+        "client_id = 'a7077526223f4354a52b343a820cf2de'\n",
+        "client_secret = '10d4691821454143aea86f4d40143550'\n",
+        "\n",
+        "client_credentials_manager = SpotifyClientCredentials(client_id, client_secret)\n",
+        "sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)\n",
+        "\n",
+        "def getTrackIDs(user, playlist_id):\n",
+        "    ids = []\n",
+        "    playlist = sp.user_playlist(user, playlist_id)\n",
+        "    for item in playlist['tracks']['items']:\n",
+        "        track = item['track']\n",
+        "        ids.append(track['id'])\n",
+        "    return ids\n",
+        "\n",
+        "ids = getTrackIDs('21kpo3qso4ue3kbhcl6c7rsmi', '3ei8qOsqwvbAahyJTLOO8l')\n",
+        "\n",
+        "#print(len(ids))\n",
+        "#print(ids)\n",
+        "\n",
+        "\n",
+        "def getTrackFeatures(id):\n",
+        "  meta = sp.track(id)\n",
+        "  features = sp.audio_features(id)\n",
+        "\n",
+        "  # meta\n",
+        "  name = meta['name']\n",
+        "  album = meta['album']['name']\n",
+        "  artist = meta['album']['artists'][0]['name']\n",
+        "  release_date = meta['album']['release_date']\n",
+        "  length = meta['duration_ms']\n",
+        "  popularity = meta['popularity']\n",
+        "\n",
+        "  # features\n",
+        "  acousticness = features[0]['acousticness']\n",
+        "  danceability = features[0]['danceability']\n",
+        "  energy = features[0]['energy']\n",
+        "  instrumentalness = features[0]['instrumentalness']\n",
+        "  liveness = features[0]['liveness']\n",
+        "  loudness = features[0]['loudness']\n",
+        "  speechiness = features[0]['speechiness']\n",
+        "  tempo = features[0]['tempo']\n",
+        "  time_signature = features[0]['time_signature']\n",
+        "\n",
+        "  track = [name, album, artist, release_date, length, popularity, danceability, acousticness, danceability, energy, instrumentalness, liveness, loudness, speechiness, tempo, time_signature]\n",
+        "  return track\n",
+        "\n",
+        "  # loop over track ids \n",
+        "tracks = []\n",
+        "for i in range(len(ids)):\n",
+        "  time.sleep(.5)\n",
+        "  track = getTrackFeatures(ids[i])\n",
+        "  tracks.append(track)\n",
+        "\n",
+        "# create dataset\n",
+        "df = pd.DataFrame(tracks, columns = ['name', 'album', 'artist', 'release_date', 'length', 'popularity', 'danceability', 'acousticness', 'danceability', 'energy', 'instrumentalness', 'liveness', 'loudness', 'speechiness', 'tempo', 'time_signature'])\n",
+        "df.to_csv('/drive/My Drive/Colab/spotify_nun.csv', sep = ',')\n",
+        "\n",
+        "\n",
+        "#https://towardsdatascience.com/reading-and-writing-files-with-google-colaboratory-f0c234683946"
+      ],
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Drive already mounted at /drive; to attempt to forcibly remount, call drive.mount(\"/drive\", force_remount=True).\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    }
+  ]
+}
